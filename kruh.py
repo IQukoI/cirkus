@@ -97,13 +97,8 @@ if submit:
         flow.append(Spacer(1, 12))
 
         # Údaje uživatele
-        flow.append(Paragraph(f"Jméno uživatele: {user_name if user_name else 'Neuvedeno'}", styles["Normal"]))
-        flow.append(Paragraph(f"E-mail uživatele: {user_email if user_email else 'Neuvedeno'}", styles["Normal"]))
-        flow.append(Spacer(1, 12))
-
-        # Autor aplikace
-        flow.append(Paragraph("Autor aplikace: Vaše jméno", styles["Normal"]))
-        flow.append(Paragraph("Kontakt: vas.email@example.com", styles["Normal"]))
+        flow.append(Paragraph(f"Jméno: {user_name if user_name else 'Neuvedeno'}", styles["Normal"]))
+        flow.append(Paragraph(f"E-mail: {user_email if user_email else 'Neuvedeno'}", styles["Normal"]))
         flow.append(Spacer(1, 12))
 
         # Datum generování
