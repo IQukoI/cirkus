@@ -12,8 +12,8 @@ st.title("Kružnice s body")
 # --- SIDEBAR s informacemi ---
 st.sidebar.header("Informace o aplikaci")
 st.sidebar.markdown("""
-**Autor:** Vaše jméno  
-**Kontakt:** váš.email@example.com  
+**Autor:** Martin Říha  
+**Kontakt:** 278328@vutbr.cz  
 
 **Použité technologie:**  
 - [Streamlit](https://streamlit.io)  
