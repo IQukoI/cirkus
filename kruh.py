@@ -5,6 +5,7 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from datetime import datetime
 import streamlit.components.v1 as components
+import os
 
 st.set_page_config(page_title="Kružnice s body", layout="centered")
 
@@ -22,6 +23,14 @@ st.sidebar.markdown("""
 - [Matplotlib](https://matplotlib.org)  
 - [ReportLab](https://www.reportlab.com) pro export PDF  
 """)
+
+# Inicializace stavů
+if "pdf_ready" not in st.session_state:
+    st.session_state.pdf_ready = False
+if "pdf_file" not in st.session_state:
+    st.session_state.pdf_file = None
+if "print_ready" not in st.session_state:
+    st.session_state.print_ready = False
 
 # --- Formulář pro zadání parametrů ---
 with st.form("circle_form"):
@@ -64,7 +73,7 @@ if submit:
 
     st.pyplot(fig)
 
-    # --- Export do PDF ---
+    # --- Export do PDF funkce ---
     def export_pdf():
         filename = f"kruznice_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
         doc = SimpleDocTemplate(filename)
@@ -87,26 +96,39 @@ if submit:
         doc.build(flow)
         return filename
 
+    # Sloupce s tlačítky
     col1, col2 = st.columns(2)
 
     with col1:
         if st.button("📄 Exportovat do PDF"):
             pdf_file = export_pdf()
-            with open(pdf_file, "rb") as f:
-                st.download_button(
-                    label="📥 Stáhnout PDF",
-                    data=f,
-                    file_name=pdf_file,
-                    mime="application/pdf"
-                )
+            st.session_state.pdf_file = pdf_file
+            st.session_state.pdf_ready = True
 
     with col2:
         if st.button("🖨️ Tisk"):
-            components.html(
-                """
-                <script>
-                window.print();
-                </script>
-                """,
-                height=0,
-            )
+            st.session_state.print_ready = True
+
+# --- Po kliknutí na PDF tlačítko ukázat download ---
+if st.session_state.pdf_ready and st.session_state.pdf_file and os.path.exists(st.session_state.pdf_file):
+    with open(st.session_state.pdf_file, "rb") as f:
+        st.download_button(
+            label="📥 Stáhnout PDF",
+            data=f,
+            file_name=st.session_state.pdf_file,
+            mime="application/pdf"
+        )
+    # reset
+    st.session_state.pdf_ready = False
+
+# --- Po kliknutí na Tisk ---
+if st.session_state.print_ready:
+    components.html(
+        """
+        <script>
+        window.print();
+        </script>
+        """,
+        height=0,
+    )
+    st.session_state.print_ready = False
