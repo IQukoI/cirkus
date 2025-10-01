@@ -6,7 +6,6 @@ from reportlab.lib.styles import getSampleStyleSheet
 from datetime import datetime
 import streamlit.components.v1 as components
 import io
-from PIL import Image as PILImage
 
 st.set_page_config(page_title="Kružnice s body", layout="centered")
 
@@ -15,7 +14,7 @@ st.title("Kružnice s body")
 # --- SIDEBAR s informacemi ---
 st.sidebar.header("Informace o aplikaci")
 st.sidebar.markdown("""
-**Autor:** Vaše jméno  
+**Autor aplikace:** Vaše jméno  
 **Kontakt:** vas.email@example.com  
 
 **Použité technologie:**  
@@ -27,12 +26,18 @@ st.sidebar.markdown("""
 
 # --- Formulář pro zadání parametrů ---
 with st.form("circle_form"):
+    st.subheader("Parametry kružnice")
     x_center = st.number_input("Souřadnice středu X:", value=0.0)
     y_center = st.number_input("Souřadnice středu Y:", value=0.0)
     radius = st.number_input("Poloměr kružnice:", value=10.0, min_value=0.1)
     num_points = st.number_input("Počet bodů na kružnici:", value=8, min_value=1, step=1)
     color = st.color_picker("Vyber barvu bodů:", "#ff0000")
     units = st.selectbox("Jednotka:", ["mm", "cm", "m"])
+
+    st.subheader("Údaje pro PDF")
+    user_name = st.text_input("Vaše jméno:")
+    user_email = st.text_input("Váš e-mail:")
+
     submit = st.form_submit_button("Vykreslit")
 
 if submit:
@@ -66,7 +71,7 @@ if submit:
 
     st.pyplot(fig)
 
-    # --- Export PDF do paměti (s grafem) ---
+    # --- Export PDF do paměti (s grafem a údaji uživatele) ---
     def make_pdf():
         buffer = io.BytesIO()
 
@@ -82,15 +87,26 @@ if submit:
 
         flow.append(Paragraph("<b>Výstup z aplikace Kružnice s body</b>", styles["Title"]))
         flow.append(Spacer(1, 12))
+
+        # Parametry úlohy
         flow.append(Paragraph(f"Souřadnice středu: ({x_center} mm, {y_center} mm)", styles["Normal"]))
         flow.append(Paragraph(f"Poloměr: {radius} mm", styles["Normal"]))
         flow.append(Paragraph(f"Počet bodů: {num_points}", styles["Normal"]))
         flow.append(Paragraph(f"Barva bodů: {color}", styles["Normal"]))
         flow.append(Paragraph(f"Jednotka zadaná uživatelem: {units}", styles["Normal"]))
         flow.append(Spacer(1, 12))
-        flow.append(Paragraph("Autor: Vaše jméno", styles["Normal"]))
+
+        # Údaje uživatele
+        flow.append(Paragraph(f"Jméno uživatele: {user_name if user_name else 'Neuvedeno'}", styles["Normal"]))
+        flow.append(Paragraph(f"E-mail uživatele: {user_email if user_email else 'Neuvedeno'}", styles["Normal"]))
+        flow.append(Spacer(1, 12))
+
+        # Autor aplikace
+        flow.append(Paragraph("Autor aplikace: Vaše jméno", styles["Normal"]))
         flow.append(Paragraph("Kontakt: vas.email@example.com", styles["Normal"]))
         flow.append(Spacer(1, 12))
+
+        # Datum generování
         flow.append(Paragraph(f"Vygenerováno: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}", styles["Italic"]))
         flow.append(Spacer(1, 24))
 
@@ -124,4 +140,3 @@ if submit:
                 """,
                 height=0,
             )
-
