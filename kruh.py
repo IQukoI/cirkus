@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from datetime import datetime
+import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Kružnice s body", layout="centered")
 
@@ -12,8 +13,8 @@ st.title("Kružnice s body")
 # --- SIDEBAR s informacemi ---
 st.sidebar.header("Informace o aplikaci")
 st.sidebar.markdown("""
-**Autor:** Martin Říha  
-**Kontakt:** 278328@vutbr.cz  
+**Autor:** Vaše jméno  
+**Kontakt:** vas.email@example.com  
 
 **Použité technologie:**  
 - [Streamlit](https://streamlit.io)  
@@ -79,19 +80,33 @@ if submit:
         flow.append(Paragraph(f"Jednotka zadaná uživatelem: {units}", styles["Normal"]))
         flow.append(Spacer(1, 12))
         flow.append(Paragraph("Autor: Vaše jméno", styles["Normal"]))
-        flow.append(Paragraph("Kontakt: váš.email@example.com", styles["Normal"]))
+        flow.append(Paragraph("Kontakt: vas.email@example.com", styles["Normal"]))
         flow.append(Spacer(1, 12))
         flow.append(Paragraph(f"Vygenerováno: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}", styles["Italic"]))
 
         doc.build(flow)
         return filename
 
-    if st.button("Exportovat do PDF"):
-        pdf_file = export_pdf()
-        with open(pdf_file, "rb") as f:
-            st.download_button(
-                label="📥 Stáhnout PDF",
-                data=f,
-                file_name=pdf_file,
-                mime="application/pdf"
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button("📄 Exportovat do PDF"):
+            pdf_file = export_pdf()
+            with open(pdf_file, "rb") as f:
+                st.download_button(
+                    label="📥 Stáhnout PDF",
+                    data=f,
+                    file_name=pdf_file,
+                    mime="application/pdf"
+                )
+
+    with col2:
+        if st.button("🖨️ Tisk"):
+            components.html(
+                """
+                <script>
+                window.print();
+                </script>
+                """,
+                height=0,
             )
