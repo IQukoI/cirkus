@@ -1,75 +1,46 @@
-<!doctype html>
-<html lang="cs">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Kružnice — vykreslení v prohlížeči</title>
-  <style>
-    body { font-family: Arial, Helvetica, sans-serif; margin: 20px; background:#f7f7f7; color:#222; }
-    .container { max-width:900px; margin:0 auto; display:grid; grid-template-columns: 320px 1fr; gap:20px; }
-    .panel { background:white; padding:16px; border-radius:10px; box-shadow:0 2px 8px rgba(0,0,0,0.06); }
-    label { display:block; margin-top:8px; font-size:14px; }
-    input[type="number"], input[type="color"], select { width:100%; padding:8px; margin-top:6px; box-sizing:border-box; }
-    button { margin-top:12px; padding:10px 14px; border:none; border-radius:8px; cursor:pointer; background:#1f6feb; color:white; font-weight:600; }
-    button.secondary { background:#4b5563; }
-    canvas { width:100%; height:100%; background: #fff; border-radius:8px; display:block; box-shadow:0 2px 6px rgba(0,0,0,0.05); }
-    .hint { font-size:13px; color:#555; margin-top:6px; }
-    .row { display:flex; gap:8px; }
-    .small { flex:1; }
-  </style>
-</head>
-<body>
-  <h2>Kružnice — vykreslení (HTML + JavaScript)</h2>
-  <div class="container">
-    <div class="panel">
-      <label>Šířka plátna (px)
-        <input id="canvasW" type="number" value="800" min="100">
-      </label>
-      <label>Výška plátna (px)
-        <input id="canvasH" type="number" value="500" min="100">
-      </label>
+import streamlit as st
+import numpy as np
+import matplotlib.pyplot as plt
 
-      <hr>
+st.title("Kružnice s body")
 
-      <label>Souřadnice středu X (px)
-        <input id="cx" type="number" placeholder="např. 400">
-      </label>
-      <label>Souřadnice středu Y (px)
-        <input id="cy" type="number" placeholder="např. 250">
-      </label>
-      <div class="hint">Pokud necháš políčka prázdná, použije se střed plátna.</div>
+# Formulář pro vstupy
+with st.form("circle_form"):
+    x_center = st.number_input("Souřadnice středu X:", value=0.0)
+    y_center = st.number_input("Souřadnice středu Y:", value=0.0)
+    radius = st.number_input("Poloměr kružnice:", value=10.0, min_value=0.1)
+    num_points = st.number_input("Počet bodů na kružnici:", value=8, min_value=1, step=1)
+    color = st.color_picker("Vyber barvu bodů:", "#ff0000")
+    units = st.selectbox("Jednotka:", ["mm", "cm", "m"])
+    submit = st.form_submit_button("Vykreslit")
 
-      <label>Průměr (px)
-        <input id="diameter" type="number" value="200" min="0.1">
-      </label>
+if submit:
+    # Převod na milimetry
+    if units == "m":
+        factor = 1000
+    elif units == "cm":
+        factor = 10
+    else:
+        factor = 1
 
-      <label>Barva čáry
-        <input id="color" type="color" value="#ff0000">
-      </label>
+    x_center *= factor
+    y_center *= factor
+    radius *= factor
 
-      <label>Šířka čáry (px)
-        <input id="lineWidth" type="number" value="3" min="1">
-      </label>
+    # Výpočet bodů
+    angles = np.linspace(0, 2*np.pi, int(num_points), endpoint=False)
+    x_points = x_center + radius * np.cos(angles)
+    y_points = y_center + radius * np.sin(angles)
 
-      <label>Styl čáry
-        <select id="lineStyle">
-          <option value="solid">plná čára</option>
-          <option value="dashed">čárkovaná</option>
-          <option value="dotted">tečkovaná</option>
-        </select>
-      </label>
+    # Vykreslení
+    fig, ax = plt.subplots()
+    circle = plt.Circle((x_center, y_center), radius, fill=False, linestyle="--")
+    ax.add_artist(circle)
+    ax.scatter(x_points, y_points, c=color, s=100)
 
-      <div class="row">
-        <button id="drawBtn">Vykreslit</button>
-        <button id="clearBtn" class="secondary">Vyčistit</button>
-      </div>
+    ax.set_aspect("equal", adjustable="box")
+    ax.set_xlabel("X [mm]")
+    ax.set_ylabel("Y [mm]")
+    ax.grid(True)
 
-      <button id="downloadBtn" style="margin-top:8px;">Stáhnout PNG</button>
-
-      <div style="margin-top:12px;" class="hint">
-        Poznámka: souřadnice a rozměry jsou v pixelech. Při hostování na webu funguje stejným způsobem.
-      </div>
-    </div>
-
-    <div class="panel" style="padding:12px;">
-      <ca
+    st.pyplot(fig)
