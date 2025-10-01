@@ -1,11 +1,12 @@
 import streamlit as st
 import numpy as np
 import matplotlib.pyplot as plt
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet
 from datetime import datetime
 import streamlit.components.v1 as components
 import io
+from PIL import Image as PILImage
 
 st.set_page_config(page_title="Kružnice s body", layout="centered")
 
@@ -65,9 +66,16 @@ if submit:
 
     st.pyplot(fig)
 
-    # --- Export PDF do paměti ---
+    # --- Export PDF do paměti (s grafem) ---
     def make_pdf():
         buffer = io.BytesIO()
+
+        # uložit graf do obrázku
+        img_buffer = io.BytesIO()
+        fig.savefig(img_buffer, format="png", bbox_inches="tight")
+        img_buffer.seek(0)
+
+        # ReportLab dokument
         doc = SimpleDocTemplate(buffer)
         styles = getSampleStyleSheet()
         flow = []
@@ -84,6 +92,10 @@ if submit:
         flow.append(Paragraph("Kontakt: vas.email@example.com", styles["Normal"]))
         flow.append(Spacer(1, 12))
         flow.append(Paragraph(f"Vygenerováno: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}", styles["Italic"]))
+        flow.append(Spacer(1, 24))
+
+        # vložit obrázek grafu
+        flow.append(Image(img_buffer, width=400, height=400))
 
         doc.build(flow)
         buffer.seek(0)
@@ -112,3 +124,4 @@ if submit:
                 """,
                 height=0,
             )
+
